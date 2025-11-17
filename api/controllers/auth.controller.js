@@ -79,14 +79,19 @@ const loginUser = asyncHandler(async (req, res) => {
     }
 
     const user = await User.findOne({ email });
-    if (!user || !(await user.isPasswordCorrect(password))) {
+    if (!user) {
+        const pendingVerification = await Verification.findOne({ email });
+        if (pendingVerification) {
+            throw new ApiError(401, "Your email is not verified yet. Please check your inbox for the OTP.");
+        }
+        throw new ApiError(404, "User not found. Please register first.");
+    }
+
+    const isPasswordValid = await user.isPasswordCorrect(password);
+    if (!isPasswordValid) {
         throw new ApiError(401, "Invalid credentials");
     }
 
-    if (!user.isEmailVerified) {
-        throw new ApiError(401, "Please verify your email before logging in.");
-    }
-    
     const accessToken = user.generateAccessToken();
     const refreshToken = user.generateRefreshToken();
 
@@ -104,7 +109,7 @@ const loginUser = asyncHandler(async (req, res) => {
     return res.status(200)
         .cookie("accessToken", accessToken, options)
         .cookie("refreshToken", refreshToken, options)
-        .json(new ApiResponse(200, { user: loggedInUser }, "User logged in successfully"));
+        .json(new ApiResponse(200, { user: loggedInUser, accessToken, refreshToken }, "User logged in successfully"));
 });
 
 const forgotPassword = asyncHandler(async (req, res) => {
