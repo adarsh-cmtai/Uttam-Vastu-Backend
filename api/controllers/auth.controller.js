@@ -79,19 +79,14 @@ const loginUser = asyncHandler(async (req, res) => {
     }
 
     const user = await User.findOne({ email });
-    if (!user) {
-        const pendingVerification = await Verification.findOne({ email });
-        if (pendingVerification) {
-            throw new ApiError(401, "Your email is not verified yet. Please check your inbox for the OTP.");
-        }
-        throw new ApiError(404, "User not found. Please register first.");
-    }
-
-    const isPasswordValid = await user.isPasswordCorrect(password);
-    if (!isPasswordValid) {
+    if (!user || !(await user.isPasswordCorrect(password))) {
         throw new ApiError(401, "Invalid credentials");
     }
 
+    if (!user.isEmailVerified) {
+        throw new ApiError(401, "Please verify your email before logging in.");
+    }
+    
     const accessToken = user.generateAccessToken();
     const refreshToken = user.generateRefreshToken();
 
@@ -100,9 +95,8 @@ const loginUser = asyncHandler(async (req, res) => {
 
     const options = {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production' ? true : false,
-        sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
-        domain: '.vercel.app',
+        secure: true,
+        sameSite: 'None',
     };
     
     const loggedInUser = await User.findById(user._id).select("-password -refreshToken");
@@ -110,7 +104,7 @@ const loginUser = asyncHandler(async (req, res) => {
     return res.status(200)
         .cookie("accessToken", accessToken, options)
         .cookie("refreshToken", refreshToken, options)
-        .json(new ApiResponse(200, { user: loggedInUser, accessToken, refreshToken }, "User logged in successfully"));
+        .json(new ApiResponse(200, { user: loggedInUser }, "User logged in successfully"));
 });
 
 const forgotPassword = asyncHandler(async (req, res) => {
