@@ -102,6 +102,7 @@ const loginUser = asyncHandler(async (req, res) => {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production' ? true : false,
         sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+        domain: '.vercel.app',
     };
     
     const loggedInUser = await User.findById(user._id).select("-password -refreshToken");
