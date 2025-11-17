@@ -15,7 +15,7 @@ const getCookieOptions = () => {
         return {
             httpOnly: true,
             secure: true, // HTTPS ke liye zaroori
-            sameSite: 'None', // Cross-domain cookies ke liye zaroori
+            sameSite: 'Lax', // Cross-domain cookies ke liye zaroori
         };
     } else {
         // Development (localhost) ke liye settings
