@@ -98,12 +98,13 @@ const loginUser = asyncHandler(async (req, res) => {
     user.refreshToken = refreshToken;
     await user.save({ validateBeforeSave: false });
 
-    const options = {
-        httpOnly: true,
-        secure: true,
-        sameSite: "none",
-        path: "/"                    // 🔥 REQUIRED FOR VERCEL
-    };
+   const options = {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+    path: "/",
+    domain: ".vercel.app"
+};
     
     const loggedInUser = await User.findById(user._id).select("-password -refreshToken");
 

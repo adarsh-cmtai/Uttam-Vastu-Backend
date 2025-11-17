@@ -13,10 +13,29 @@ dotenv.config({
 const app = express();
 const PORT = process.env.PORT || 8000;
 
-app.use(cors({
-    origin: process.env.CORS_ORIGIN,
+const allowedOrigins = [
+  "https://uttam-vastu-frontend.vercel.app",
+  "http://localhost:3000"
+];
+
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true); // Postman, curl
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      } else {
+        return callback(new Error("Origin Not Allowed by CORS"));
+      }
+    },
     credentials: true,
-}));
+    methods: "GET,POST,PUT,DELETE,PATCH,OPTIONS",
+    allowedHeaders: "Content-Type, Authorization"
+  })
+);
+
+// Preflight fix
+app.options("*", cors());
 
 
 app.use(express.json({ limit: "16kb" }));
