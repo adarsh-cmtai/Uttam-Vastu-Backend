@@ -103,7 +103,7 @@ const loginUser = asyncHandler(async (req, res) => {
     secure: true,
     sameSite: "none",
     path: "/",
-    domain: ".vercel.app"
+    domain: "uttam-vastu-backend.vercel.app"
 };
     
     const loggedInUser = await User.findById(user._id).select("-password -refreshToken");
