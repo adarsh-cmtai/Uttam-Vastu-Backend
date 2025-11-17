@@ -1,10 +1,9 @@
-// server.js (Updated)
 import dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';
-import cookieParser from 'cookie-parser'; // Cookie-parser import karein
+import cookieParser from 'cookie-parser';
 import connectDB from './api/config/db.js';
-import apiRouter from './api/routes/index.js'; // Root router ko import karein
+import apiRouter from './api/routes/index.js';
 
 dotenv.config({
     path: './.env'
@@ -21,7 +20,7 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: function (origin, callback) {
-      if (!origin) return callback(null, true); // Postman, curl
+      if (!origin) return callback(null, true);
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
       } else {
@@ -34,12 +33,11 @@ app.use(
   })
 );
 
-
 app.use(express.json({ limit: "16kb" }));
 app.use(express.urlencoded({ extended: true, limit: "16kb" }));
-app.use(cookieParser()); // Cookie-parser ko use karein
+app.use(cookieParser());
 
-app.use("/api/v1", apiRouter); // API routes ko register karein
+app.use("/api/v1", apiRouter);
 
 const startServer = async () => {
     try {
