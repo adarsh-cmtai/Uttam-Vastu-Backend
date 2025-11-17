@@ -100,9 +100,10 @@ const loginUser = asyncHandler(async (req, res) => {
 
     const options = {
         httpOnly: true,
-        secure: true,
-        sameSite: "None",
+        secure: process.env.NODE_ENV === 'production' ? true : false,
+        sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
     };
+    
     const loggedInUser = await User.findById(user._id).select("-password -refreshToken");
 
     return res.status(200)
