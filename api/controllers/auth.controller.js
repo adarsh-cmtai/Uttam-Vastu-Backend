@@ -8,6 +8,24 @@ import crypto from 'crypto';
 
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 
+// Cookie options ko dynamic banayein environment ke hisab se
+const getCookieOptions = () => {
+    if (process.env.NODE_ENV === 'production') {
+        // Production (Vercel) ke liye settings
+        return {
+            httpOnly: true,
+            secure: true, // HTTPS ke liye zaroori
+            sameSite: 'None', // Cross-domain cookies ke liye zaroori
+        };
+    } else {
+        // Development (localhost) ke liye settings
+        return {
+            httpOnly: true,
+            secure: false,
+        };
+    }
+};
+
 const registerUser = asyncHandler(async (req, res) => {
     const { name, email, password } = req.body;
 
@@ -97,10 +115,14 @@ const loginUser = asyncHandler(async (req, res) => {
 
     user.refreshToken = refreshToken;
     await user.save({ validateBeforeSave: false });
+
+    const options = getCookieOptions();
     
     const loggedInUser = await User.findById(user._id).select("-password -refreshToken");
 
     return res.status(200)
+        .cookie("accessToken", accessToken, options)
+        .cookie("refreshToken", refreshToken, options)
         .json(new ApiResponse(200, { user: loggedInUser, accessToken, refreshToken }, "User logged in successfully"));
 });
 
@@ -149,7 +171,11 @@ const logoutUser = asyncHandler(async (req, res) => {
         { new: true }
     );
     
+    const options = getCookieOptions();
+
     return res.status(200)
+        .clearCookie("accessToken", options)
+        .clearCookie("refreshToken", options)
         .json(new ApiResponse(200, {}, "User logged out successfully"));
 });
 

@@ -12,22 +12,22 @@ dotenv.config({
 const app = express();
 const PORT = process.env.PORT || 8000;
 
+// IMPORTANT: Apna frontend ka Vercel URL yahan daalein
 const allowedOrigins = [
-  "https://uttam-vastu-frontend.vercel.app",
+  "https://uttam-vastu-frontend.vercel.app", // Example URL, isko apne real URL se badlein
   "http://localhost:3000"
 ];
 
 app.use(
   cors({
     origin: function (origin, callback) {
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
       } else {
-        return callback(new Error("Origin Not Allowed by CORS"));
+        callback(new Error("Not allowed by CORS"));
       }
     },
-    credentials: true,
+    credentials: true, // Cookies ke liye yeh bahut zaroori hai
     methods: "GET,POST,PUT,DELETE,PATCH,OPTIONS",
     allowedHeaders: "Content-Type, Authorization"
   })
