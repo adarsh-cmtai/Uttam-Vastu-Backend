@@ -57,4 +57,16 @@ const updateBookingStatus = asyncHandler(async (req, res) => {
     return res.status(200).json(new ApiResponse(200, booking, `Booking status updated to ${status}.`));
 });
 
-export { createBooking, getAllBookings, updateBookingStatus };
+const deleteBookings = asyncHandler(async (req, res) => {
+    const { ids } = req.body;
+    
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+        throw new ApiError(400, "No IDs provided for deletion.");
+    }
+
+    await LiveSessionBooking.deleteMany({ _id: { $in: ids } });
+
+    return res.status(200).json(new ApiResponse(200, {}, "Selected bookings deleted successfully."));
+});
+
+export { createBooking, getAllBookings, updateBookingStatus, deleteBookings };

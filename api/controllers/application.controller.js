@@ -59,4 +59,16 @@ const updateApplicationStatus = asyncHandler(async (req, res) => {
     return res.status(200).json(new ApiResponse(200, application, `Application status updated to ${status}.`));
 });
 
-export { createApplication, getAllApplications, updateApplicationStatus };
+const deleteApplications = asyncHandler(async (req, res) => {
+    const { ids } = req.body;
+    
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+        throw new ApiError(400, "No IDs provided for deletion.");
+    }
+
+    await JoinUsApplication.deleteMany({ _id: { $in: ids } });
+
+    return res.status(200).json(new ApiResponse(200, {}, "Selected applications deleted successfully."));
+});
+
+export { createApplication, getAllApplications, updateApplicationStatus, deleteApplications };

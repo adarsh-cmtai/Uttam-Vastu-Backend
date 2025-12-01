@@ -56,4 +56,56 @@ const updateEnquiryStatus = asyncHandler(async (req, res) => {
     return res.status(200).json(new ApiResponse(200, enquiry, `Enquiry status updated to ${status}.`));
 });
 
-export { createEnquiry, getAllEnquiries, updateEnquiryStatus };
+const deleteEnquiries = asyncHandler(async (req, res) => {
+    const { ids } = req.body;
+    
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+        throw new ApiError(400, "No IDs provided for deletion.");
+    }
+
+    await ContactEnquiry.deleteMany({ _id: { $in: ids } });
+
+    return res.status(200).json(new ApiResponse(200, {}, "Selected enquiries deleted successfully."));
+});
+
+const replyToEnquiry = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { subject, message } = req.body;
+
+    if (!subject || !message) {
+        throw new ApiError(400, "Subject and message are required.");
+    }
+
+    const enquiry = await ContactEnquiry.findById(id);
+    if (!enquiry) {
+        throw new ApiError(404, "Enquiry not found.");
+    }
+
+    const htmlReply = `
+        <div style="font-family: Arial, sans-serif; line-height: 1.6; border: 1px solid #ddd; padding: 20px; border-radius: 8px;">
+            <h2 style="color: #D7281E;">Re: ${enquiry.subject}</h2>
+            <p>Hello ${enquiry.name},</p>
+            <p>Thank you for contacting Vastumaye. Regarding your enquiry:</p>
+            <div style="background-color: #f9f9f9; border-left: 4px solid #D7281E; padding: 15px; margin: 20px 0;">
+                ${message.replace(/\n/g, '<br>')}
+            </div>
+            <p>If you have further questions, please reply to this email.</p>
+            <br>
+            <p>Warm Regards,</p>
+            <p><strong>The Vastumaye Team</strong></p>
+        </div>
+    `;
+
+    await sendEmail({
+        to: enquiry.email,
+        subject: subject,
+        html: htmlReply
+    });
+
+    enquiry.status = 'Contacted';
+    await enquiry.save();
+
+    return res.status(200).json(new ApiResponse(200, {}, "Reply sent successfully."));
+});
+
+export { createEnquiry, getAllEnquiries, updateEnquiryStatus, deleteEnquiries, replyToEnquiry };
