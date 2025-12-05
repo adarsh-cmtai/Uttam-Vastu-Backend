@@ -14,7 +14,8 @@ const PORT = process.env.PORT || 8000;
 
 // IMPORTANT: Apna frontend ka Vercel URL yahan daalein
 const allowedOrigins = [
-  "https://uttam-vastu-frontend.vercel.app", // Example URL, isko apne real URL se badlein
+  "https://uttam-vastu-frontend.vercel.app",
+  "https://www.vastumaye.com",
   "http://localhost:3000"
 ];
 
